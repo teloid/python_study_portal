@@ -16,7 +16,7 @@
 		"db:migrate:local": "wrangler d1 migrations apply study-portal --local",
 		"db:migrate:remote": "wrangler d1 migrations apply study-portal --remote",
 		"hash": "node scripts/gen-hash.mjs",
-		"pages:deploy": "npm run build && wrangler pages deploy"
+		"pages:deploy": "npm run build && wrangler pages deploy --commit-dirty=true"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20250620.0",
