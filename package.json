@@ -1,0 +1,43 @@
+{
+	"name": "python-study-portal",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"description": "Питон-Портал — учим Python и SQL в браузере, по-русски.",
+	"scripts": {
+		"copy:sqlwasm": "node scripts/copy-sql-wasm.mjs",
+		"predev": "node scripts/copy-sql-wasm.mjs",
+		"dev": "vite dev",
+		"prebuild": "node scripts/copy-sql-wasm.mjs",
+		"build": "vite build",
+		"preview": "vite preview",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
+		"db:create": "wrangler d1 create study-portal",
+		"db:migrate:local": "wrangler d1 migrations apply study-portal --local",
+		"db:migrate:remote": "wrangler d1 migrations apply study-portal --remote",
+		"hash": "node scripts/gen-hash.mjs",
+		"pages:deploy": "npm run build && wrangler pages deploy"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20250620.0",
+		"@sveltejs/adapter-cloudflare": "^7.0.0",
+		"@sveltejs/kit": "^2.21.0",
+		"@sveltejs/vite-plugin-svelte": "^5.0.0",
+		"svelte": "^5.20.0",
+		"svelte-check": "^4.1.0",
+		"vite": "^6.2.0",
+		"wrangler": "^4.20.0"
+	},
+	"dependencies": {
+		"@codemirror/autocomplete": "^6.18.0",
+		"@codemirror/commands": "^6.7.0",
+		"@codemirror/lang-python": "^6.1.6",
+		"@codemirror/lang-sql": "^6.8.0",
+		"@codemirror/language": "^6.10.0",
+		"@codemirror/state": "^6.5.0",
+		"@codemirror/theme-one-dark": "^6.1.2",
+		"@codemirror/view": "^6.36.0",
+		"codemirror": "^6.0.1",
+		"sql.js": "^1.14.0"
+	}
+}

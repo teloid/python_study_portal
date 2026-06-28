@@ -1,0 +1,6 @@
+# Пример секретов для локальной разработки. Скопируйте в .dev.vars (он в .gitignore).
+# Эти переменные используются только скриптом создания пользователей (scripts/gen-hash.mjs)
+# и НЕ требуются самим приложением в рантайме.
+
+TEACHER_PASSWORD=change-me-teacher
+STUDENT_PASSWORD=change-me-student

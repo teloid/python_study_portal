@@ -1,0 +1,29 @@
+{
+	// Конфигурация Cloudflare для Pages + D1.
+	// 1) Создайте базу:           npm run db:create
+	//    (скопируйте database_id из вывода сюда)
+	// 2) Прогоните миграции:      npm run db:migrate:local   (и :remote для прода)
+	"name": "python-study-portal",
+	"compatibility_date": "2026-06-01",
+	// nodejs_als нужен адаптеру Cloudflare (AsyncLocalStorage).
+	"compatibility_flags": [
+		"nodejs_als"
+	],
+	// Папка сборки SvelteKit. Её наличие говорит wrangler, что это проект Pages,
+	// и привязки ниже (d1_databases) автоматически прикрепляются при деплое.
+	"pages_build_output_dir": ".svelte-kit/cloudflare",
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "study-portal",
+			"database_id": "d2580311-e891-4417-9ead-f67c7b4f7466",
+			"migrations_dir": "migrations"
+		},
+		{
+			"binding": "study_portal",
+			"database_name": "study-portal",
+			"database_id": "d2580311-e891-4417-9ead-f67c7b4f7466",
+			"remote": true
+		}
+	]
+}
