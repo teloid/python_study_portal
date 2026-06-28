@@ -87,6 +87,10 @@ npm run hash -- <логин> <пароль> "<Имя для показа>" <teac
 
 ## ☁️ Деплой на Cloudflare Pages
 
+> 💡 Хочешь, чтобы каждый `git push` деплоил сам (рекомендуется)? Настрой автодеплой
+> из GitHub — пошагово в **[docs/deploy-github.md](docs/deploy-github.md)**. Ниже —
+> ручной вариант через CLI.
+
 ```bash
 # 1. Войти в Cloudflare (откроется браузер)
 npx wrangler login
