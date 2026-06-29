@@ -1,4 +1,7 @@
 <script>
+	import { renderMarkdown, renderInline } from '$lib/markdown';
+	import { GLOSSARY_KEYS } from '$lib/content/glossary';
+
 	let { items = [], onresult = () => {} } = $props();
 
 	let selected = $state(items.map(() => -1));
@@ -18,7 +21,10 @@
 <div class="quiz">
 	{#each items as q, qi}
 		<div class="q card">
-			<div class="q-text"><span class="q-icon">❓</span> {q.question}</div>
+			<div class="q-text">
+				<span class="q-icon">❓</span>
+				<div class="q-md prose">{@html renderMarkdown(q.question, GLOSSARY_KEYS)}</div>
+			</div>
 			<div class="options">
 				{#each q.options as opt, oi}
 					{@const answered = selected[qi] !== -1}
@@ -34,13 +40,13 @@
 						<span class="opt-mark">
 							{#if answered && isCorrect}✓{:else if answered && isChosen}✗{:else}{String.fromCharCode(65 + oi)}{/if}
 						</span>
-						{opt}
+						<span class="opt-text">{@html renderInline(opt)}</span>
 					</button>
 				{/each}
 			</div>
 			{#if selected[qi] !== -1 && q.explain}
 				<div class="explain fade-up" class:right={selected[qi] === q.correct}>
-					{selected[qi] === q.correct ? '✅ Верно! ' : '💡 '}{q.explain}
+					{selected[qi] === q.correct ? '✅ Верно! ' : '💡 '}{@html renderInline(q.explain, GLOSSARY_KEYS)}
 				</div>
 			{/if}
 		</div>
@@ -57,13 +63,30 @@
 		padding: 18px;
 	}
 	.q-text {
-		font-weight: 700;
-		font-family: var(--font-display);
-		font-size: 1.05rem;
-		margin-bottom: 12px;
+		display: flex;
+		gap: 9px;
+		margin-bottom: 14px;
 	}
 	.q-icon {
-		margin-right: 4px;
+		flex: none;
+		font-size: 1.1rem;
+		line-height: 1.5;
+	}
+	.q-md {
+		flex: 1;
+		min-width: 0;
+	}
+	.q-md :global(p) {
+		margin: 0;
+		font-weight: 600;
+		font-size: 1.03rem;
+	}
+	.q-md :global(.md-code) {
+		margin-top: 10px;
+		font-weight: 400;
+	}
+	.opt-text {
+		min-width: 0;
 	}
 	.options {
 		display: flex;
