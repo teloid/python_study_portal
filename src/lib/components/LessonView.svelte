@@ -3,6 +3,7 @@
 	import TheoryBlock from './TheoryBlock.svelte';
 	import Exercise from './Exercise.svelte';
 	import Quiz from './Quiz.svelte';
+	import SqlDataset from './SqlDataset.svelte';
 	import { LEVEL_LABELS, TOPIC_LABELS } from '$lib/content/schema';
 	import { CATALOG } from '$lib/content/catalog';
 	import { isLessonAvailable } from '$lib/content/lessons';
@@ -18,6 +19,11 @@
 	let score = $derived(passedSet.size + quizCorrect);
 	let pct = $derived(maxScore > 0 ? Math.round((score / maxScore) * 100) : 0);
 	let isDone = $derived(maxScore > 0 && score >= maxScore);
+
+	// seedSql урока (для SQL-уроков) — чтобы показать таблицы ученику.
+	let sqlSeed = $derived(
+		lesson.exercises.find((/** @type {any} */ e) => e.lang === 'sql' && e.seedSql)?.seedSql ?? ''
+	);
 
 	let nextLesson = $derived.by(() => {
 		const ordered = [...CATALOG].sort((a, b) => a.order - b.order);
@@ -93,6 +99,10 @@
 				{#each lesson.goals as g}<li>{g}</li>{/each}
 			</ul>
 		</section>
+	{/if}
+
+	{#if sqlSeed}
+		<SqlDataset seed={sqlSeed} />
 	{/if}
 
 	<section class="theory">

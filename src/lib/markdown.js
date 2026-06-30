@@ -27,6 +27,9 @@ function escapeHtml(s) {
 // и сам символ обратной кавычки — через коды, чтобы не путаться в исходнике.
 const BT_MARKER = String.fromCharCode(0xe000);
 const BACKTICK = String.fromCharCode(96);
+// Маркер вокруг индекса код-вставки. Уникальный символ (приватная область
+// Unicode), чтобы плейсхолдер не совпадал с обычными числами в тексте.
+const CODE_MARKER = String.fromCharCode(0xe001);
 
 /**
  * Нормализуем содержимое `код`-спана к ключу глоссария:
@@ -60,7 +63,7 @@ function inline(text, glossaryKeys) {
 			html = `<code>${escapeHtml(code)}</code>`;
 		}
 		codes.push(html);
-		return ` ${codes.length - 1} `;
+		return `${CODE_MARKER}${codes.length - 1}${CODE_MARKER}`;
 	});
 
 	s = escapeHtml(s);
@@ -71,8 +74,9 @@ function inline(text, glossaryKeys) {
 		return `<a href="${escapeHtml(safe)}" target="_blank" rel="noopener">${t}</a>`;
 	});
 
-	// Возвращаем код-спаны на место.
-	s = s.replace(/ (\d+) /g, (_, i) => codes[Number(i)]);
+	// Возвращаем код-спаны на место по уникальному маркеру (чтобы не цеплять
+	// обычные числа в тексте, например «4 пробела»).
+	s = s.replace(new RegExp(CODE_MARKER + '(\\d+)' + CODE_MARKER, 'g'), (_, i) => codes[Number(i)]);
 	// Экранированный бэктик возвращаем как обычный видимый символ.
 	s = s.split(BT_MARKER).join(BACKTICK);
 	return s;
