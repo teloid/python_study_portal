@@ -2,19 +2,38 @@
 	import { renderMarkdown, renderInline } from '$lib/markdown';
 	import { GLOSSARY_KEYS } from '$lib/content/glossary';
 
-	let { items = [], onresult = () => {} } = $props();
+	let { items = [], initial = null, onresult = () => {} } = $props();
 
-	let selected = $state(items.map(() => -1));
+	// Состояние каждого вопроса: sel — выбранный индекс (или -1), solved — угадан.
+	let state = $state(
+		items.map((/** @type {any} */ _, /** @type {number} */ i) =>
+			initial && initial[i]
+				? { sel: initial[i].sel ?? -1, solved: !!initial[i].solved }
+				: { sel: -1, solved: false }
+		)
+	);
+
+	function report() {
+		const correct = state.filter((s) => s.solved).length;
+		onresult({
+			correct,
+			total: items.length,
+			state: state.map((s) => ({ sel: s.sel, solved: s.solved }))
+		});
+	}
 
 	/** @param {number} qi @param {number} oi */
 	function choose(qi, oi) {
-		if (selected[qi] !== -1) return; // ответ фиксируется
-		selected[qi] = oi;
-		const correct = selected.reduce(
-			(n, sel, i) => n + (sel === items[i].correct ? 1 : 0),
-			0
-		);
-		onresult({ correct, total: items.length });
+		if (state[qi].solved) return; // правильный ответ уже зафиксирован
+		state[qi].sel = oi;
+		if (oi === items[qi].correct) state[qi].solved = true;
+		report();
+	}
+
+	/** @param {number} qi */
+	function retry(qi) {
+		if (state[qi].solved) return;
+		state[qi].sel = -1;
 	}
 </script>
 
@@ -27,26 +46,32 @@
 			</div>
 			<div class="options">
 				{#each q.options as opt, oi}
-					{@const answered = selected[qi] !== -1}
-					{@const isChosen = selected[qi] === oi}
+					{@const solved = state[qi].solved}
+					{@const isChosen = state[qi].sel === oi}
 					{@const isCorrect = q.correct === oi}
 					<button
 						class="opt"
-						class:correct={answered && isCorrect}
-						class:wrong={answered && isChosen && !isCorrect}
-						disabled={answered}
+						class:correct={solved && isCorrect}
+						class:wrong={!solved && isChosen}
+						disabled={solved}
 						onclick={() => choose(qi, oi)}
 					>
 						<span class="opt-mark">
-							{#if answered && isCorrect}✓{:else if answered && isChosen}✗{:else}{String.fromCharCode(65 + oi)}{/if}
+							{#if solved && isCorrect}✓{:else if !solved && isChosen}✗{:else}{String.fromCharCode(65 + oi)}{/if}
 						</span>
 						<span class="opt-text">{@html renderInline(opt)}</span>
 					</button>
 				{/each}
 			</div>
-			{#if selected[qi] !== -1 && q.explain}
-				<div class="explain fade-up" class:right={selected[qi] === q.correct}>
-					{selected[qi] === q.correct ? '✅ Верно! ' : '💡 '}{@html renderInline(q.explain, GLOSSARY_KEYS)}
+
+			{#if state[qi].solved}
+				<div class="explain right fade-up">
+					✅ Верно! {@html renderInline(q.explain ?? '', GLOSSARY_KEYS)}
+				</div>
+			{:else if state[qi].sel !== -1}
+				<div class="retry fade-up">
+					<span>🤔 Не совсем — выбери другой вариант.</span>
+					<button class="btn btn-ghost btn-sm" onclick={() => retry(qi)}>↺ Сбросить выбор</button>
 				</div>
 			{/if}
 		</div>
@@ -155,5 +180,17 @@
 	}
 	.explain.right {
 		background: var(--success-soft);
+	}
+	.retry {
+		margin-top: 11px;
+		padding: 9px 14px;
+		border-radius: 10px;
+		background: var(--warning-soft);
+		color: #8a5a08;
+		font-size: 0.9rem;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		flex-wrap: wrap;
 	}
 </style>

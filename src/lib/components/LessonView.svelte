@@ -1,5 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
+	import { page } from '$app/state';
 	import TheoryBlock from './TheoryBlock.svelte';
 	import Exercise from './Exercise.svelte';
 	import Quiz from './Quiz.svelte';
@@ -13,8 +15,30 @@
 	let { lesson, progress, maxScore } = $props();
 
 	const wasCompleted = progress?.status === 'completed';
-	let passedSet = $state(new Set(wasCompleted ? lesson.exercises.map((/** @type {any} */ e) => e.id) : []));
-	let quizCorrect = $state(wasCompleted ? (lesson.quiz?.length ?? 0) : 0);
+	const username = page.data?.user?.username ?? 'anon';
+	const storeKey = `pp-progress:${lesson.slug}:${username}`;
+
+	// Восстанавливаем сохранённое состояние урока (какие задания решены и какие
+	// вопросы квиза отвечены) — чтобы обновление страницы не сбрасывало прогресс.
+	let saved = null;
+	if (browser) {
+		try {
+			saved = JSON.parse(localStorage.getItem(storeKey) || 'null');
+		} catch {
+			saved = null;
+		}
+	}
+
+	let passedSet = $state(
+		new Set(wasCompleted ? lesson.exercises.map((/** @type {any} */ e) => e.id) : (saved?.ex ?? []))
+	);
+
+	// Начальное состояние квиза: пройденный урок -> всё верно; иначе из сохранённого.
+	const quizInitial = wasCompleted
+		? (lesson.quiz ?? []).map((/** @type {any} */ q) => ({ sel: q.correct, solved: true }))
+		: (saved?.quiz ?? null);
+	let quizState = quizInitial ?? (lesson.quiz ?? []).map(() => ({ sel: -1, solved: false }));
+	let quizCorrect = $state(quizState.filter((/** @type {any} */ s) => s.solved).length);
 
 	let score = $derived(passedSet.size + quizCorrect);
 	let pct = $derived(maxScore > 0 ? Math.round((score / maxScore) * 100) : 0);
@@ -40,6 +64,16 @@
 			warmupPython();
 	});
 
+	// Сохраняем локально (на этом устройстве) детальное состояние урока.
+	function save() {
+		if (!browser) return;
+		try {
+			localStorage.setItem(storeKey, JSON.stringify({ ex: [...passedSet], quiz: quizState }));
+		} catch {
+			/* localStorage недоступен — не критично */
+		}
+	}
+
 	/** @param {number} s @param {any} submission */
 	async function postProgress(s, submission) {
 		try {
@@ -60,12 +94,15 @@
 			next.add(exerciseId);
 			passedSet = next;
 		}
+		save();
 		postProgress(passedSet.size + quizCorrect, { exerciseId, passed, code });
 	}
 
-	/** @param {{ correct: number, total: number }} r */
-	function onQuizResult({ correct }) {
+	/** @param {{ correct: number, total: number, state: any[] }} r */
+	function onQuizResult({ correct, state }) {
 		quizCorrect = correct;
+		quizState = state;
+		save();
 		postProgress(passedSet.size + quizCorrect, null);
 	}
 </script>
@@ -127,7 +164,7 @@
 	{#if lesson.quiz?.length}
 		<section class="quiz-sec">
 			<h2 class="sec-title">🧠 Проверь себя</h2>
-			<Quiz items={lesson.quiz} onresult={onQuizResult} />
+			<Quiz items={lesson.quiz} initial={quizInitial} onresult={onQuizResult} />
 		</section>
 	{/if}
 
