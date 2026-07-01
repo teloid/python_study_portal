@@ -19,10 +19,16 @@ import l12 from './functions-basics.js';
 import l13 from './sql-simple-join.js';
 import l14 from './errors-and-exceptions.js';
 import l15 from './capstone-mini-project.js';
+import l16 from './practice-numbers-strings.js';
+import l17 from './practice-conditions-loops.js';
+import l18 from './practice-lists-dicts.js';
+import l19 from './practice-functions.js';
+import l20 from './sql-practice.js';
+import l21 from './practice-word-problems.js';
 import { maxScore } from '../schema.js';
 
 /** @type {import('../schema').Lesson[]} */
-const LESSONS = [l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13, l14, l15];
+const LESSONS = [l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13, l14, l15, l16, l17, l18, l19, l20, l21];
 
 /** @type {Map<string, import('../schema').Lesson>} */
 export const LESSONS_BY_SLUG = new Map(LESSONS.map((l) => [l.slug, l]));

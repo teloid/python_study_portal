@@ -4,7 +4,7 @@
 	let { data } = $props();
 
 	let pct = $derived(
-		data.totalCount > 0 ? Math.round((data.completedCount / data.totalCount) * 100) : 0
+		data.baseTotal > 0 ? Math.round((data.completedCount / data.baseTotal) * 100) : 0
 	);
 </script>
 
@@ -19,7 +19,7 @@
 			</p>
 		</div>
 		<div class="welcome-stat">
-			<div class="big">{data.completedCount}<span class="of">/ {data.totalCount}</span></div>
+			<div class="big">{data.completedCount}<span class="of">/ {data.baseTotal}</span></div>
 			<div class="stat-label">уроков пройдено</div>
 			<div class="progress"><span style="width:{pct}%"></span></div>
 		</div>
@@ -27,11 +27,11 @@
 
 	<div class="section-head">
 		<h2>Программа курса</h2>
-		<span class="muted small">Доступно сейчас: {data.availableCount} • Остальные скоро добавим</span>
+		<span class="muted small">Доступно сейчас: {data.availableCount}</span>
 	</div>
 
 	<div class="grid">
-		{#each data.lessons as lesson (lesson.slug)}
+		{#each data.baseLessons as lesson (lesson.slug)}
 			<LessonCard
 				entry={lesson}
 				available={lesson.available}
@@ -41,6 +41,31 @@
 			/>
 		{/each}
 	</div>
+
+	{#if data.practiceLessons.length}
+		<div class="section-head practice-head">
+			<h2>🎯 Практикум</h2>
+			{#if data.practiceUnlocked}
+				<span class="muted small">Открыто! Закрепляем навыки на новых задачах 🎉</span>
+			{:else}
+				<span class="lock-note">🔒 Откроется, когда пройдёшь все {data.baseTotal} уроков — пройдено {data.baseDone}/{data.baseTotal}</span>
+			{/if}
+		</div>
+
+		<div class="grid">
+			{#each data.practiceLessons as lesson (lesson.slug)}
+				<LessonCard
+					entry={lesson}
+					available={lesson.available}
+					locked={lesson.locked}
+					lockLabel="🔒 Сначала все {data.baseTotal} уроков"
+					status={lesson.progress?.status ?? null}
+					score={lesson.progress?.score ?? 0}
+					maxScore={lesson.progress?.max_score ?? 0}
+				/>
+			{/each}
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -89,8 +114,19 @@
 		margin-bottom: 16px;
 		flex-wrap: wrap;
 	}
+	.practice-head {
+		margin-top: 36px;
+	}
 	.small {
 		font-size: 0.85rem;
+	}
+	.lock-note {
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--warning);
+		background: var(--warning-soft);
+		padding: 6px 13px;
+		border-radius: var(--r-pill);
 	}
 	.grid {
 		display: grid;

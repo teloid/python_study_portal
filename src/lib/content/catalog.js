@@ -18,6 +18,7 @@
  * @property {string} emoji
  * @property {string} summary
  * @property {string[]} goals
+ * @property {boolean} [practice]  - урок-практикум (Часть А), открывается после всех 15 базовых
  */
 
 /** @type {CatalogEntry[]} */
@@ -291,8 +292,140 @@ export const CATALOG = [
 			'Познакомиться с простым классом',
 			'Довести небольшой проект до рабочего состояния'
 		]
+	},
+
+	/* ---------------- Часть А: практикумы (откроются после всех 15 уроков) --------------- */
+	{
+		slug: 'practice-numbers-strings',
+		title: 'Практикум: числа и строки',
+		level: 'beginner',
+		topic: 'python',
+		order: 16,
+		estimatedMinutes: 40,
+		emoji: '🧮',
+		practice: true,
+		summary:
+			'Закрепляем переменные, арифметику, строки и f-строки на живых задачах: чаевые, инициалы, перевод минут в часы, цена со скидкой. Меньше теории — больше практики.',
+		goals: [
+			'Уверенно считать и форматировать вывод',
+			'Собирать строки через f-строки',
+			'Комбинировать числа и текст в одной задаче',
+			'Писать маленькие функции-помощники'
+		]
+	},
+	{
+		slug: 'practice-conditions-loops',
+		title: 'Практикум: условия и циклы',
+		level: 'beginner',
+		topic: 'python',
+		order: 17,
+		estimatedMinutes: 45,
+		emoji: '🔀',
+		practice: true,
+		summary:
+			'Смешиваем if/elif/else с циклами for и while на разных сюжетах: FizzBuzz, проверка пароля, суммы и подсчёты. Тренируем логику до автоматизма.',
+		goals: [
+			'Свободно ветвить логику через if/elif/else',
+			'Комбинировать условия с циклами',
+			'Накапливать сумму и счётчик в цикле',
+			'Разбирать задачу на шаги'
+		]
+	},
+	{
+		slug: 'practice-lists-dicts',
+		title: 'Практикум: списки и словари',
+		level: 'intermediate',
+		topic: 'python',
+		order: 18,
+		estimatedMinutes: 45,
+		emoji: '🗃️',
+		practice: true,
+		summary:
+			'Обрабатываем данные: статистика оценок, частота слов, корзина покупок, топ элементов. Списки и словари вместе с циклами на практике.',
+		goals: [
+			'Обходить и обрабатывать списки и словари',
+			'Считать статистику по данным',
+			'Строить словари из данных',
+			'Находить максимум/минимум и итоги'
+		]
+	},
+	{
+		slug: 'practice-functions',
+		title: 'Практикум: свои функции',
+		level: 'intermediate',
+		topic: 'python',
+		order: 19,
+		estimatedMinutes: 45,
+		emoji: '🧩',
+		practice: true,
+		summary:
+			'Собираем маленькие функции-утилиты и учимся их комбинировать (композиция). Разбиваем задачу на части и переиспользуем код.',
+		goals: [
+			'Писать функции с параметрами и return',
+			'Комбинировать функции (одна использует другую)',
+			'Разбивать задачу на маленькие функции',
+			'Переиспользовать код вместо повторов'
+		]
+	},
+	{
+		slug: 'sql-practice',
+		title: 'SQL-практикум: интернет-магазин',
+		level: 'intermediate',
+		topic: 'sql',
+		order: 20,
+		estimatedMinutes: 50,
+		emoji: '🛒',
+		practice: true,
+		summary:
+			'Одна база «интернет-магазин» (клиенты, товары, заказы) и задания по нарастанию: от простого SELECT до агрегатов, GROUP BY и JOIN. Всё, что учили по SQL, вместе.',
+		goals: [
+			'Выбирать и фильтровать данные',
+			'Сортировать и ограничивать результат',
+			'Считать итоги (COUNT/SUM/AVG) и группировать',
+			'Соединять таблицы через JOIN'
+		]
+	},
+	{
+		slug: 'practice-word-problems',
+		title: 'Практикум: текстовые задачи',
+		level: 'intermediate',
+		topic: 'python',
+		order: 21,
+		estimatedMinutes: 50,
+		emoji: '📝',
+		practice: true,
+		summary:
+			'Переводим условие «на словах» в код: сдача в магазине, хватит ли денег, счёт на N человек, перевод температуры. Соединяем всё изученное.',
+		goals: [
+			'Переводить словесное условие в код',
+			'Выбирать нужные конструкции под задачу',
+			'Собирать решение из условий, циклов и функций',
+			'Проверять решение на разных данных'
+		]
 	}
 ];
 
 /** @type {Map<string, CatalogEntry>} */
 export const CATALOG_BY_SLUG = new Map(CATALOG.map((c) => [c.slug, c]));
+
+/** Слаги базового курса (всё, что НЕ практикум). */
+export const BASE_SLUGS = CATALOG.filter((c) => !c.practice).map((c) => c.slug);
+
+/** Слаги практикумов (Часть А). */
+export const PRACTICE_SLUGS = CATALOG.filter((c) => c.practice).map((c) => c.slug);
+
+/**
+ * Практикумы открываются только когда пройдены ВСЕ базовые уроки.
+ * @param {Record<string, { status?: string }>} progressBySlug
+ */
+export function isPracticeUnlocked(progressBySlug) {
+	return BASE_SLUGS.every((slug) => progressBySlug[slug]?.status === 'completed');
+}
+
+/**
+ * Сколько базовых уроков пройдено (для подсказки «X из N»).
+ * @param {Record<string, { status?: string }>} progressBySlug
+ */
+export function baseCompletedCount(progressBySlug) {
+	return BASE_SLUGS.filter((slug) => progressBySlug[slug]?.status === 'completed').length;
+}

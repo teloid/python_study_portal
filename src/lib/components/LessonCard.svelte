@@ -1,22 +1,38 @@
 <script>
 	import { LEVEL_LABELS, TOPIC_LABELS } from '$lib/content/schema';
 
-	let { entry, available = false, status = null, score = 0, maxScore = 0 } = $props();
+	let {
+		entry,
+		available = false,
+		locked = false,
+		lockLabel = '🔒 Скоро',
+		status = null,
+		score = 0,
+		maxScore = 0
+	} = $props();
 
+	// Кликабельна только если урок готов И не заблокирован.
+	let open = $derived(available && !locked);
 	let pct = $derived(maxScore > 0 ? Math.round((score / maxScore) * 100) : 0);
+	// Что показать в подвале заблокированной/недоступной карточки.
+	let footLabel = $derived(!available ? '🔒 Скоро' : lockLabel);
 </script>
 
-{#if available}
-	<a class="lesson-card card hoverable" href="/app/lesson/{entry.slug}">
-		<div class="top">
-			<span class="emoji">{entry.emoji}</span>
-			<div class="badges">
-				<span class="badge badge-{entry.topic}">{TOPIC_LABELS[entry.topic]}</span>
-				<span class="badge badge-{entry.level}">{LEVEL_LABELS[entry.level]}</span>
-			</div>
+{#snippet body()}
+	<div class="top">
+		<span class="emoji" class:dimmed={!open}>{entry.emoji}</span>
+		<div class="badges">
+			<span class="badge badge-{entry.topic}">{TOPIC_LABELS[entry.topic]}</span>
+			<span class="badge badge-{entry.level}">{LEVEL_LABELS[entry.level]}</span>
 		</div>
-		<h3 class="title"><span class="num">Урок {entry.order}.</span> {entry.title}</h3>
-		<p class="summary">{entry.summary}</p>
+	</div>
+	<h3 class="title"><span class="num">Урок {entry.order}.</span> {entry.title}</h3>
+	<p class="summary">{entry.summary}</p>
+{/snippet}
+
+{#if open}
+	<a class="lesson-card card hoverable" href="/app/lesson/{entry.slug}">
+		{@render body()}
 		<div class="foot">
 			{#if status === 'completed'}
 				<span class="status done">✓ Пройден</span>
@@ -32,18 +48,10 @@
 		</div>
 	</a>
 {:else}
-	<div class="lesson-card card locked">
-		<div class="top">
-			<span class="emoji dimmed">{entry.emoji}</span>
-			<div class="badges">
-				<span class="badge badge-{entry.topic}">{TOPIC_LABELS[entry.topic]}</span>
-				<span class="badge badge-{entry.level}">{LEVEL_LABELS[entry.level]}</span>
-			</div>
-		</div>
-		<h3 class="title"><span class="num">Урок {entry.order}.</span> {entry.title}</h3>
-		<p class="summary">{entry.summary}</p>
+	<div class="lesson-card card locked-card" class:gated={available && locked}>
+		{@render body()}
 		<div class="foot">
-			<span class="status soon">🔒 Скоро</span>
+			<span class="status soon">{footLabel}</span>
 			<span class="mins">~{entry.estimatedMinutes} мин</span>
 		</div>
 	</div>
@@ -61,8 +69,12 @@
 	.lesson-card:hover {
 		text-decoration: none;
 	}
-	.lesson-card.locked {
+	.locked-card {
 		opacity: 0.62;
+	}
+	.locked-card.gated {
+		opacity: 0.78;
+		border-style: dashed;
 	}
 	.top {
 		display: flex;

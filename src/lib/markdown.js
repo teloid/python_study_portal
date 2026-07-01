@@ -77,6 +77,12 @@ function inline(text, glossaryKeys) {
 	// Возвращаем код-спаны на место по уникальному маркеру (чтобы не цеплять
 	// обычные числа в тексте, например «4 пробела»).
 	s = s.replace(new RegExp(CODE_MARKER + '(\\d+)' + CODE_MARKER, 'g'), (_, i) => codes[Number(i)]);
+	// Не отрываем знак препинания от код-чипа при переносе строки (чтобы точка
+	// после `except` не «убегала» одна на новую строку).
+	s = s.replace(
+		/(<(?:code|button)[^>]*>[^<]*<\/(?:code|button)>)([.,:;!?)]+)/g,
+		'<span class="nowrap-punct">$1$2</span>'
+	);
 	// Экранированный бэктик возвращаем как обычный видимый символ.
 	s = s.split(BT_MARKER).join(BACKTICK);
 	return s;
