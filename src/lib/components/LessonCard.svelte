@@ -26,7 +26,10 @@
 			<span class="badge badge-{entry.level}">{LEVEL_LABELS[entry.level]}</span>
 		</div>
 	</div>
-	<h3 class="title"><span class="num">Урок {entry.order}.</span> {entry.title}</h3>
+	<h3 class="title">
+		{#if !entry.deepdive}<span class="num">Урок {entry.order}.</span>{/if}
+		{entry.title}
+	</h3>
 	<p class="summary">{entry.summary}</p>
 {/snippet}
 

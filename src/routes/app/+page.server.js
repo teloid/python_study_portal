@@ -22,16 +22,19 @@ export async function load({ locals, platform }) {
 		...c,
 		available: isLessonAvailable(c.slug),
 		// Практикум заблокирован, пока не пройдены все базовые уроки.
+		// Погружения — боковая ветка, доступны всегда.
 		locked: Boolean(c.practice) && !practiceUnlocked,
 		progress: bySlug[c.slug] ?? null
 	}));
 
-	const baseLessons = lessons.filter((l) => !l.practice);
+	const baseLessons = lessons.filter((l) => !l.practice && !l.deepdive);
 	const practiceLessons = lessons.filter((l) => l.practice);
+	const deepDiveLessons = lessons.filter((l) => l.deepdive);
 
 	return {
 		baseLessons,
 		practiceLessons,
+		deepDiveLessons,
 		practiceUnlocked,
 		baseDone: baseCompletedCount(bySlug),
 		baseTotal: BASE_SLUGS.length,

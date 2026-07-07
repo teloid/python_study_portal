@@ -42,6 +42,28 @@
 		{/each}
 	</div>
 
+	{#if data.deepDiveLessons.length}
+		<div class="section-head practice-head">
+			<h2>🤿 Глубокое погружение</h2>
+			<span class="muted small">
+				Боковая ветка: разбираем одну тему очень подробно, с самых основ. Заходи в любой момент,
+				если тема «не щёлкает».
+			</span>
+		</div>
+
+		<div class="grid">
+			{#each data.deepDiveLessons as lesson (lesson.slug)}
+				<LessonCard
+					entry={lesson}
+					available={lesson.available}
+					status={lesson.progress?.status ?? null}
+					score={lesson.progress?.score ?? 0}
+					maxScore={lesson.progress?.max_score ?? 0}
+				/>
+			{/each}
+		</div>
+	{/if}
+
 	{#if data.practiceLessons.length}
 		<div class="section-head practice-head">
 			<h2>🎯 Практикум</h2>
